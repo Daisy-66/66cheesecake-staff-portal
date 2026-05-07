@@ -41,8 +41,12 @@ select,input{width:100%;height:42px;border:1px solid #ead7c2;border-radius:14px;
   <div class="grid">
     <div>
       <label>分店</label>
-      <input id="store" readonly>
-    </div>
+<select id="store">
+  <option>板橋大遠百</option>
+  <option>林口三井Outlet</option>
+  <option>高雄漢神巨蛋</option>
+  <option>台中大遠百</option>
+</select>    </div>
     <div>
       <label>姓名</label>
       <select id="staff">
@@ -126,9 +130,41 @@ function toggleWeek(el){
 }
 
 function choose(btn){
+
   const day = btn.closest(".day");
-  day.querySelectorAll(".opt").forEach(b=>b.classList.remove("active"));
+
+  day.querySelectorAll(".opt").forEach(b=>{
+    b.classList.remove("active");
+  });
+
   btn.classList.add("active");
+
+  // 自訂時段
+  let custom = day.querySelector(".customInput");
+
+  if(btn.dataset.value === "自訂"){
+
+    if(!custom){
+
+      custom = document.createElement("input");
+
+      custom.className = "customInput";
+
+      custom.placeholder = "例如：14-18、16後可";
+
+      custom.style.marginTop = "8px";
+
+      day.appendChild(custom);
+    }
+
+  }else{
+
+    if(custom){
+      custom.remove();
+    }
+
+  }
+
 }
 
 function submitShift(){
@@ -142,8 +178,13 @@ function submitShift(){
       staff,
       date: day.dataset.date,
       label: day.dataset.label,
-      shift: active ? active.dataset.value : ""
-    };
+shift: active
+  ? (
+      active.dataset.value === "自訂"
+      ? (day.querySelector(".customInput")?.value || "自訂")
+      : active.dataset.value
+    )
+  : ""    };
   });
 
   console.log(rows);
