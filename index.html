@@ -3,367 +3,193 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>66 Cheesecake 排班填寫系統</title>
+<title>66 Cheesecake Staff Portal</title>
 <style>
 :root{
   --bg:#fff8ef;
-  --card:#ffffff;
-  --line:#ead7c2;
+  --card:#fff;
   --main:#b77935;
-  --main-dark:#7a4b20;
+  --dark:#7a4b20;
+  --line:#ead7c2;
   --text:#2b2118;
   --muted:#7b6b5f;
 }
-*{box-sizing:border-box;}
+*{box-sizing:border-box}
 body{
   margin:0;
-  background:var(--bg);
   font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;
+  background:var(--bg);
   color:var(--text);
 }
 header{
-  padding:24px 18px 18px;
+  padding:30px 20px 22px;
   background:linear-gradient(135deg,#fff0da,#f7d7a8);
   border-bottom:1px solid var(--line);
 }
 header h1{
   margin:0;
-  font-size:28px;
-  line-height:1.2;
-  color:var(--main-dark);
+  font-size:30px;
+  line-height:1.15;
+  color:var(--dark);
 }
 header p{
-  margin:6px 0 0;
-  color:var(--muted);
+  margin:8px 0 0;
   font-size:14px;
+  color:var(--muted);
 }
 main{
-  max-width:760px;
+  max-width:680px;
   margin:0 auto;
-  padding:14px;
+  padding:16px;
 }
 .card{
   background:var(--card);
   border:1px solid var(--line);
-  border-radius:20px;
-  padding:16px;
+  border-radius:22px;
+  padding:18px;
   margin-bottom:14px;
+  box-shadow:0 6px 18px rgba(122,75,32,.06);
 }
-.card h2{
+h2{
   margin:0 0 12px;
   font-size:18px;
-  color:var(--main-dark);
+  color:var(--dark);
 }
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-}
-label{
-  display:block;
-  font-size:13px;
-  margin-bottom:4px;
-  color:var(--muted);
-  font-weight:700;
-}
-input,select{
+select{
   width:100%;
-  height:42px;
+  height:46px;
   border:1px solid var(--line);
-  border-radius:14px;
-  padding:0 12px;
-  font-size:15px;
+  border-radius:16px;
+  padding:0 14px;
+  font-size:16px;
   background:#fffdfa;
 }
-.dayCard{
-  border:1px solid var(--line);
-  border-radius:18px;
-  padding:14px;
-  margin-bottom:12px;
-  background:#fffdfa;
-}
-.dayTitle{
-  font-size:17px;
-  font-weight:800;
-  margin-bottom:6px;
-}
-.eventTag{
-  display:inline-block;
-  background:#fee2d5;
-  color:#c2410c;
-  border-radius:999px;
-  padding:4px 10px;
-  font-size:12px;
-  font-weight:700;
-  margin-bottom:10px;
-}
-.optionGrid{
+.menu{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
+  gap:12px;
 }
-.optionBtn{
-  border:1px solid var(--line);
-  background:#fff;
-  border-radius:14px;
-  height:42px;
-  font-size:14px;
-  font-weight:700;
-  color:var(--text);
-}
-.optionBtn.active{
-  background:var(--main);
-  color:#fff;
-  border-color:var(--main);
-}
-textarea{
-  width:100%;
-  border:1px solid var(--line);
-  border-radius:14px;
-  padding:12px;
-  min-height:80px;
-  resize:vertical;
-  font-size:15px;
-}
-.actions{
-  position:sticky;
-  bottom:0;
-  background:rgba(255,248,239,.95);
-  backdrop-filter:blur(10px);
-  padding:10px 14px calc(10px + env(safe-area-inset-bottom));
-  border-top:1px solid var(--line);
-}
-button.primary{
+.menu button{
   width:100%;
   border:none;
-  background:var(--main);
-  color:#fff;
-  height:48px;
   border-radius:18px;
-  font-size:16px;
+  padding:18px 16px;
+  text-align:left;
+  font-size:17px;
+  font-weight:800;
+  color:#fff;
+  background:var(--main);
+  cursor:pointer;
+}
+.menu button.secondary{
+  background:#9a6936;
+}
+.menu button.light{
+  background:#f1d6b5;
+  color:var(--dark);
+}
+.small{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:8px;
+  line-height:1.5;
+}
+.today{
+  font-size:15px;
+  line-height:1.7;
+}
+.badge{
+  display:inline-block;
+  padding:3px 9px;
+  border-radius:999px;
+  background:#fff2dc;
+  color:var(--dark);
+  font-size:12px;
   font-weight:800;
 }
-.weekCard h2{
-  cursor:pointer;
-  user-select:none;
-}
-.weekContent{
-  margin-top:10px;
-}
-.weekCard.closed .weekContent{
-  display:none;
-}
-@media (max-width:760px){
-  .grid{
-    grid-template-columns:1fr;
-  }
+@media(max-width:760px){
+  header{padding:24px 18px 18px}
+  header h1{font-size:28px}
+  main{padding:12px}
+  .card{padding:16px;border-radius:20px}
+  .menu button{padding:16px;font-size:16px}
 }
 </style>
 </head>
 <body>
+
 <header>
-  <h1>66 Cheesecake<br>排班填寫系統</h1>
-  <p>員工可排班時段填寫｜手機版</p>
+  <h1>66 Cheesecake<br>Staff Portal</h1>
+  <p>員工系統｜排班｜人力總覽｜門市盤點</p>
 </header>
 
 <main>
 
-<section class="card">
-  <h2>① 基本資料</h2>
+  <section class="card">
+    <h2>請選擇分店</h2>
+    <select id="store">
+      <option value="板橋大遠百">板橋大遠百</option>
+      <option value="林口三井Outlet">林口三井Outlet</option>
+      <option value="高雄漢神巨蛋">高雄漢神巨蛋</option>
+      <option value="台中大遠百">台中大遠百</option>
+    </select>
+    <div class="small">選擇分店後，系統會帶入到排班、人力總覽與盤點系統。</div>
+  </section>
 
-  <div class="grid">
-    <div>
-      <label>姓名</label>
-      <select id="staffName">
-        <option>Ling</option>
-        <option>羽芯</option>
-        <option>Alice</option>
-        <option>德容</option>
-        <option>宇麒</option>
-      </select>
+  <section class="card">
+    <h2>今日資訊</h2>
+    <div class="today" id="todayInfo"></div>
+  </section>
+
+  <section class="card">
+    <h2>功能選單</h2>
+    <div class="menu">
+      <button onclick="goPage('shift-form.html')">🗓 我的排班填寫</button>
+      <button class="secondary" onclick="goPage('shift-overview.html')">👥 每日人力總覽</button>
+      <button class="light" onclick="goInventory()">📦 門市盤點系統</button>
     </div>
-
-    <div>
-      <label>月份</label>
-      <input type="month" value="2026-05" />
-    </div>
-  </div>
-</section>
-
-<section class="card">
-  <h2>② 可排班時段</h2>
-
-  <div id="daysContainer"></div>
-</section>
-
-<section class="card">
-  <h2>③ 其他備註</h2>
-  <textarea id="notes" placeholder="例如：5/15 要提早離開、5/21 可支援閉店"></textarea>
-</section>
-
-
+  </section>
 
 </main>
 
-<div class="actions">
-  <button class="primary" onclick="generateReport()">送出排班</button>
-</div>
-
 <script>
-const specialEvents = {
-  "2026-05-04":"消毒＋閉店停電",
-  "2026-05-05":"閉店停電",
-  "2026-05-06":"閉店停電"
-};
-
-function generateMonthDays(year, month){
-
-  const weekday = ["日","一","二","三","四","五","六"];
-
-  const result = [];
-
-  const lastDay = new Date(year, month, 0).getDate();
-
-  for(let day=1; day<=lastDay; day++){
-
-    const date = new Date(year, month - 1, day);
-
-    const iso =
-      `${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-
-    result.push({
-      day,
-      week: Math.ceil(day / 7),
-      date:`${month}/${day}（${weekday[date.getDay()]}）`,
-      event:specialEvents[iso] || ""
-    });
-
-  }
-
-  return result;
+function getStore(){
+  return document.getElementById("store").value;
 }
 
-const days = generateMonthDays(2026, 5);
-
-const options = [
-  '早班',
-  '晚班',
-  '全天',
-  '休假',
-  '17:00前',
-  '17:00後'
-];
-
-function renderDays(){
-  const container = document.getElementById('daysContainer');
-
-  const grouped = {};
-
-  days.forEach(day=>{
-    if(!grouped[day.week]) grouped[day.week] = [];
-    grouped[day.week].push(day);
-  });
-
-  container.innerHTML = Object.keys(grouped).map((weekKey,weekIndex)=>{
-
-    const weekDays = grouped[weekKey];
-
-    return `
-      <div class="card weekCard ${weekIndex === 0 ? '' : 'closed'}">
-
-        <h2 onclick="toggleWeek(this)">
-          ${weekIndex === 0 ? '▼' : '▶'} 第${weekKey}週
-        </h2>
-
-        <div class="weekContent">
-
-          ${weekDays.map((day,index)=>`
-
-            <div class="dayCard">
-
-              <div class="dayTitle">${day.date}</div>
-
-              ${day.event ? `<div class="eventTag">${day.event}</div>` : ''}
-
-              <div class="optionGrid">
-                ${options.map(option => `
-                  <button
-                    type="button"
-                    class="optionBtn"
-                    data-day="${index}"
-                    data-option="${option}"
-                    onclick="toggleOption(this)">
-                    ${option}
-                  </button>
-                `).join('')}
-              </div>
-
-            </div>
-
-          `).join('')}
-
-        </div>
-
-      </div>
-    `;
-
-  }).join('');
+function goPage(page){
+  const store = encodeURIComponent(getStore());
+  window.location.href = `${page}?store=${store}`;
 }
 
-function toggleWeek(el){
-
-  const card = el.closest('.weekCard');
-
-  card.classList.toggle('closed');
-
-  if(card.classList.contains('closed')){
-    el.innerHTML = el.innerHTML.replace('▼','▶');
-  }else{
-    el.innerHTML = el.innerHTML.replace('▶','▼');
-  }
+function goInventory(){
+  const store = encodeURIComponent(getStore());
+  window.location.href = `https://daisy-66.github.io/66cheesecake-site/?store=${store}`;
 }
 
+function renderToday(){
+  const now = new Date();
+  const week = ["日","一","二","三","四","五","六"];
+  const month = now.getMonth() + 1;
+  const date = now.getDate();
+  const day = week[now.getDay()];
 
-function toggleOption(button){
-  const card = button.closest('.dayCard');
+  const events = {
+    "5/4":"消毒＋閉店停電",
+    "5/5":"閉店停電",
+    "5/6":"閉店停電"
+  };
 
-  card.querySelectorAll('.optionBtn').forEach(btn=>{
-    btn.classList.remove('active');
-  });
+  const key = `${month}/${date}`;
+  const event = events[key];
 
-  button.classList.add('active');
+  document.getElementById("todayInfo").innerHTML = `
+    <strong>${month}/${date}（${day}）</strong><br>
+    ${event ? `<span class="badge">⚠️ ${event}</span>` : `<span class="badge">今日無特殊事項</span>`}
+  `;
 }
 
-function generateReport(){
-
-  const name = document.getElementById('staffName').value;
-  const notes = document.getElementById('notes').value.trim();
-
-  const lines = [];
-
-  lines.push(`${name}｜2026年5月排班`);
-  lines.push('');
-
-  document.querySelectorAll('.dayCard').forEach(card=>{
-
-    const day = card.querySelector('.dayTitle').textContent;
-
-    const active = card.querySelector('.optionBtn.active');
-
-    lines.push(`${day}：${active ? active.dataset.option : '未填寫'}`);
-
-  });
-
-  if(notes){
-    lines.push('');
-    lines.push('其他備註：');
-    lines.push(notes);
-  }
-
-  document.getElementById('output').textContent = lines.join('\n');
-}
-
-renderDays();
+renderToday();
 </script>
+
 </body>
 </html>
