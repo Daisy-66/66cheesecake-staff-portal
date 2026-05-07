@@ -108,17 +108,13 @@ const specialEvents = {
   "2026-05-06":"閉店停電"
 };
 function renderStaffOptions(){
-
-  const store = document.getElementById("store").value;
-
+  const store = document.getElementById("store").value.trim();
   const staffSelect = document.getElementById("staff");
-
   const staffList = staffByStore[store] || [];
 
   staffSelect.innerHTML = staffList
     .map(name => `<option>${name}</option>`)
     .join("");
-
 }
 function getDays(){
   const days = [];
