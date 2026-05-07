@@ -71,8 +71,8 @@ select,input{width:100%;height:42px;border:1px solid #ead7c2;border-radius:14px;
 const params = new URLSearchParams(location.search);
 document.getElementById("store").value = params.get("store") || "板橋大遠百";
 
-const options = ["早班","晚班","都可","休假","17:00前","17:00後","14-22","17-22"];
-
+const options = ["早班","晚班","都可","休假","自訂"];
+  
 const specialEvents = {
   "2026-05-04":"消毒＋閉店停電",
   "2026-05-05":"閉店停電",
