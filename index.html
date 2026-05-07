@@ -162,8 +162,13 @@ function goPage(page){
 }
 
 function goInventory(){
-  const store = encodeURIComponent(getStore());
-  window.location.href = `https://daisy-66.github.io/66cheesecake-site/?store=${store}`;
+
+  const store =
+    document.getElementById("store").value;
+
+  window.location.href =
+    "https://daisy-66.github.io/66cheesecake-site/?store="
+    + encodeURIComponent(store);
 }
 
 function renderToday(){
