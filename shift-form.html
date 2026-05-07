@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>我的排班填寫</title>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;background:#fff8ef;color:#2b2118}
+header{padding:24px 18px 18px;background:linear-gradient(135deg,#fff0da,#f7d7a8)}
+header h1{margin:0;font-size:26px;color:#7a4b20}
+main{padding:14px;max-width:720px;margin:auto}
+.card{background:#fff;border:1px solid #ead7c2;border-radius:20px;padding:16px;margin-bottom:14px}
+h2{margin:0 0 12px;font-size:18px;color:#7a4b20}
+label{display:block;font-size:13px;color:#7b6b5f;font-weight:700;margin-bottom:4px}
+select,input{width:100%;height:42px;border:1px solid #ead7c2;border-radius:14px;padding:0 12px;font-size:15px;box-sizing:border-box;background:#fffdfa}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.week h2{cursor:pointer}
+.week.closed .content{display:none}
+.day{border:1px solid #ead7c2;border-radius:16px;padding:12px;margin-bottom:10px;background:#fffdfa}
+.dayTitle{font-weight:800;margin-bottom:8px}
+.event{display:inline-block;background:#fee2d5;color:#c2410c;border-radius:999px;padding:3px 9px;font-size:12px;margin-bottom:8px}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opt{border:1px solid #ead7c2;background:#fff;border-radius:14px;height:40px;font-weight:800}
+.opt.active{background:#b77935;color:white;border-color:#b77935}
+.actions{position:sticky;bottom:0;background:#fff8ef;padding:10px 14px;border-top:1px solid #ead7c2}
+.primary{width:100%;height:48px;border:0;border-radius:18px;background:#b77935;color:white;font-size:16px;font-weight:800}
+.back{display:inline-block;margin-top:8px;color:#7a4b20;text-decoration:none;font-weight:800}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+
+<body>
+<header>
+  <h1>我的排班填寫</h1>
+  <a class="back" href="index.html">← 回首頁</a>
+</header>
+
+<main>
+<section class="card">
+  <h2>基本資料</h2>
+  <div class="grid">
+    <div>
+      <label>分店</label>
+      <input id="store" readonly>
+    </div>
+    <div>
+      <label>姓名</label>
+      <select id="staff">
+        <option>Ling</option>
+        <option>羽芯</option>
+        <option>Alice</option>
+        <option>德容</option>
+        <option>宇麒</option>
+      </select>
+    </div>
+  </div>
+</section>
+
+<section id="weeks"></section>
+</main>
+
+<div class="actions">
+  <button class="primary" onclick="submitShift()">送出排班</button>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+document.getElementById("store").value = params.get("store") || "板橋大遠百";
+
+const options = ["早班","晚班","都可","休假","17:00前","17:00後","14-22","17-22"];
+
+const specialEvents = {
+  "2026-05-04":"消毒＋閉店停電",
+  "2026-05-05":"閉店停電",
+  "2026-05-06":"閉店停電"
+};
+
+function getDays(){
+  const days = [];
+  const weekZh = ["日","一","二","三","四","五","六"];
+  for(let d=1; d<=31; d++){
+    const date = new Date(2026,4,d);
+    const iso = `2026-05-${String(d).padStart(2,"0")}`;
+    days.push({
+      day:d,
+      week:Math.ceil(d/7),
+      label:`5/${d}（${weekZh[date.getDay()]}）`,
+      event:specialEvents[iso] || ""
+    });
+  }
+  return days;
+}
+
+function render(){
+  const days = getDays();
+  const grouped = {};
+  days.forEach(day=>{
+    if(!grouped[day.week]) grouped[day.week]=[];
+    grouped[day.week].push(day);
+  });
+
+  document.getElementById("weeks").innerHTML = Object.keys(grouped).map((week,i)=>`
+    <section class="card week ${i===0 ? "" : "closed"}">
+      <h2 onclick="toggleWeek(this)">${i===0 ? "▼" : "▶"} 第${week}週</h2>
+      <div class="content">
+        ${grouped[week].map(day=>`
+          <div class="day" data-date="2026-05-${String(day.day).padStart(2,"0")}" data-label="${day.label}">
+            <div class="dayTitle">${day.label}</div>
+            ${day.event ? `<div class="event">${day.event}</div>` : ""}
+            <div class="options">
+              ${options.map(opt=>`<button type="button" class="opt" onclick="choose(this)" data-value="${opt}">${opt}</button>`).join("")}
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </section>
+  `).join("");
+}
+
+function toggleWeek(el){
+  const card = el.closest(".week");
+  card.classList.toggle("closed");
+  el.textContent = el.textContent.includes("▼")
+    ? el.textContent.replace("▼","▶")
+    : el.textContent.replace("▶","▼");
+}
+
+function choose(btn){
+  const day = btn.closest(".day");
+  day.querySelectorAll(".opt").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+}
+
+function submitShift(){
+  const store = document.getElementById("store").value;
+  const staff = document.getElementById("staff").value;
+
+  const rows = [...document.querySelectorAll(".day")].map(day=>{
+    const active = day.querySelector(".opt.active");
+    return {
+      store,
+      staff,
+      date: day.dataset.date,
+      label: day.dataset.label,
+      shift: active ? active.dataset.value : ""
+    };
+  });
+
+  console.log(rows);
+  alert("目前先完成前端填寫版，下一步會接 Google Sheets 儲存。");
+}
+
+render();
+</script>
+</body>
+</html>
