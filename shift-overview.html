@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>每日人力總覽</title>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;background:#fff8ef;color:#2b2118}
+header{padding:24px 18px 18px;background:linear-gradient(135deg,#fff0da,#f7d7a8)}
+header h1{margin:0;font-size:26px;color:#7a4b20}
+main{padding:14px;max-width:760px;margin:auto}
+.card{background:#fff;border:1px solid #ead7c2;border-radius:20px;padding:16px;margin-bottom:14px}
+h2{margin:0 0 12px;font-size:18px;color:#7a4b20}
+select{width:100%;height:42px;border:1px solid #ead7c2;border-radius:14px;padding:0 12px;font-size:15px;background:#fffdfa}
+.day{border:1px solid #ead7c2;border-radius:16px;padding:14px;margin-bottom:12px;background:#fffdfa}
+.dayTitle{font-weight:900;font-size:17px;margin-bottom:8px}
+.row{padding:6px 0;border-bottom:1px dashed #ead7c2}
+.row:last-child{border-bottom:none}
+.label{font-weight:800;color:#7a4b20}
+.empty{color:#aaa}
+.back{display:inline-block;margin-top:8px;color:#7a4b20;text-decoration:none;font-weight:800}
+button{width:100%;height:44px;border:0;border-radius:16px;background:#b77935;color:white;font-size:15px;font-weight:800}
+</style>
+</head>
+
+<body>
+<header>
+  <h1>每日人力總覽</h1>
+  <a class="back" href="index.html">← 回首頁</a>
+</header>
+
+<main>
+<section class="card">
+  <h2>選擇分店</h2>
+  <select id="store" onchange="loadOverview()">
+    <option>板橋大遠百</option>
+    <option>台中大遠百</option>
+    <option>林口三井Outlet</option>
+    <option>高雄漢神巨蛋</option>
+  </select>
+</section>
+
+<section class="card">
+  <button onclick="loadOverview()">重新整理人力總覽</button>
+</section>
+
+<section id="overview"></section>
+</main>
+
+<script>
+const GOOGLE_SCRIPT_URL = "貼上你的GAS網址";
+
+const params = new URLSearchParams(location.search);
+if(params.get("store")){
+  document.getElementById("store").value = params.get("store");
+}
+
+function apiJsonp(action, payload){
+  return new Promise((resolve,reject)=>{
+    const callbackName = `jsonp_${Date.now()}_${Math.floor(Math.random()*100000)}`;
+    const params = new URLSearchParams({
+      action,
+      callback: callbackName,
+      ...payload
+    });
+
+    const script = document.createElement("script");
+    script.src = `${GOOGLE_SCRIPT_URL}?${params.toString()}`;
+
+    window[callbackName] = data => {
+      delete window[callbackName];
+      script.remove();
+      resolve(data);
+    };
+
+    script.onerror = () => {
+      delete window[callbackName];
+      script.remove();
+      reject(new Error("讀取失敗"));
+    };
+
+    document.body.appendChild(script);
+  });
+}
+
+async function loadOverview(){
+  const store = document.getElementById("store").value;
+  const box = document.getElementById("overview");
+
+  box.innerHTML = `<section class="card">讀取中...</section>`;
+
+  try{
+    const result = await apiJsonp("getShiftOverview", { store });
+
+    if(!result.ok){
+      box.innerHTML = `<section class="card">讀取失敗</section>`;
+      return;
+    }
+
+    renderOverview(result.days || []);
+
+  }catch(e){
+    box.innerHTML = `<section class="card">讀取失敗，請確認 GAS 部署。</section>`;
+  }
+}
+
+function renderOverview(days){
+  const box = document.getElementById("overview");
+
+  if(!days.length){
+    box.innerHTML = `<section class="card">目前沒有排班資料。</section>`;
+    return;
+  }
+
+  box.innerHTML = days.map(day=>`
+    <section class="day">
+      <div class="dayTitle">${day.label}</div>
+
+      <div class="row"><span class="label">早班：</span>${showNames(day["早班"])}</div>
+      <div class="row"><span class="label">晚班：</span>${showNames(day["晚班"])}</div>
+      <div class="row"><span class="label">都可：</span>${showNames(day["都可"])}</div>
+      <div class="row"><span class="label">休假：</span>${showNames(day["休假"])}</div>
+      <div class="row"><span class="label">自訂：</span>${showNames(day["自訂"])}</div>
+    </section>
+  `).join("");
+}
+
+function showNames(list){
+  return list && list.length ? list.join("、") : `<span class="empty">-</span>`;
+}
+
+loadOverview();
+</script>
+</body>
+</html>
