@@ -143,14 +143,15 @@ button.primary{
   font-size:16px;
   font-weight:800;
 }
-.output{
-  white-space:pre-wrap;
-  background:#20160f;
-  color:#fff7ed;
-  border-radius:16px;
-  padding:16px;
-  font-size:14px;
-  line-height:1.6;
+.weekCard h2{
+  cursor:pointer;
+  user-select:none;
+}
+.weekContent{
+  margin-top:10px;
+}
+.weekCard.closed .weekContent{
+  display:none;
 }
 @media (max-width:760px){
   .grid{
@@ -200,27 +201,49 @@ button.primary{
   <textarea id="notes" placeholder="例如：5/15 要提早離開、5/21 可支援閉店"></textarea>
 </section>
 
-<section class="card">
-  <h2>LINE 回報預覽</h2>
-  <div class="output" id="output">按下產生回報後顯示</div>
-</section>
+
 
 </main>
 
 <div class="actions">
-  <button class="primary" onclick="generateReport()">產生排班回報</button>
+  <button class="primary" onclick="generateReport()">送出排班</button>
 </div>
 
 <script>
-const days = [
-  { date:'5/1（五）' },
-  { date:'5/2（六）' },
-  { date:'5/3（日）' },
-  { date:'5/4（一）', event:'消毒＋閉店停電' },
-  { date:'5/5（二）', event:'閉店停電' },
-  { date:'5/6（三）', event:'閉店停電' },
-  { date:'5/7（四）' }
-];
+const specialEvents = {
+  "2026-05-04":"消毒＋閉店停電",
+  "2026-05-05":"閉店停電",
+  "2026-05-06":"閉店停電"
+};
+
+function generateMonthDays(year, month){
+
+  const weekday = ["日","一","二","三","四","五","六"];
+
+  const result = [];
+
+  const lastDay = new Date(year, month, 0).getDate();
+
+  for(let day=1; day<=lastDay; day++){
+
+    const date = new Date(year, month - 1, day);
+
+    const iso =
+      `${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+
+    result.push({
+      day,
+      week: Math.ceil(day / 7),
+      date:`${month}/${day}（${weekday[date.getDay()]}）`,
+      event:specialEvents[iso] || ""
+    });
+
+  }
+
+  return result;
+}
+
+const days = generateMonthDays(2026, 5);
 
 const options = [
   '早班',
@@ -234,29 +257,72 @@ const options = [
 function renderDays(){
   const container = document.getElementById('daysContainer');
 
-  container.innerHTML = days.map((day,index)=>`
-    <div class="dayCard">
+  const grouped = {};
 
-      <div class="dayTitle">${day.date}</div>
+  days.forEach(day=>{
+    if(!grouped[day.week]) grouped[day.week] = [];
+    grouped[day.week].push(day);
+  });
 
-      ${day.event ? `<div class="eventTag">${day.event}</div>` : ''}
+  container.innerHTML = Object.keys(grouped).map((weekKey,weekIndex)=>{
 
-      <div class="optionGrid">
-        ${options.map(option => `
-          <button
-            type="button"
-            class="optionBtn"
-            data-day="${index}"
-            data-option="${option}"
-            onclick="toggleOption(this)">
-            ${option}
-          </button>
-        `).join('')}
+    const weekDays = grouped[weekKey];
+
+    return `
+      <div class="card weekCard ${weekIndex === 0 ? '' : 'closed'}">
+
+        <h2 onclick="toggleWeek(this)">
+          ${weekIndex === 0 ? '▼' : '▶'} 第${weekKey}週
+        </h2>
+
+        <div class="weekContent">
+
+          ${weekDays.map((day,index)=>`
+
+            <div class="dayCard">
+
+              <div class="dayTitle">${day.date}</div>
+
+              ${day.event ? `<div class="eventTag">${day.event}</div>` : ''}
+
+              <div class="optionGrid">
+                ${options.map(option => `
+                  <button
+                    type="button"
+                    class="optionBtn"
+                    data-day="${index}"
+                    data-option="${option}"
+                    onclick="toggleOption(this)">
+                    ${option}
+                  </button>
+                `).join('')}
+              </div>
+
+            </div>
+
+          `).join('')}
+
+        </div>
+
       </div>
+    `;
 
-    </div>
-  `).join('');
+  }).join('');
 }
+
+function toggleWeek(el){
+
+  const card = el.closest('.weekCard');
+
+  card.classList.toggle('closed');
+
+  if(card.classList.contains('closed')){
+    el.innerHTML = el.innerHTML.replace('▼','▶');
+  }else{
+    el.innerHTML = el.innerHTML.replace('▶','▼');
+  }
+}
+
 
 function toggleOption(button){
   const card = button.closest('.dayCard');
