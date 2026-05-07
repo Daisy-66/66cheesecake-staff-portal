@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>66 Cheesecake 排班填寫系統</title>
+<style>
+:root{
+  --bg:#fff8ef;
+  --card:#ffffff;
+  --line:#ead7c2;
+  --main:#b77935;
+  --main-dark:#7a4b20;
+  --text:#2b2118;
+  --muted:#7b6b5f;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--bg);
+  font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC",sans-serif;
+  color:var(--text);
+}
+header{
+  padding:24px 18px 18px;
+  background:linear-gradient(135deg,#fff0da,#f7d7a8);
+  border-bottom:1px solid var(--line);
+}
+header h1{
+  margin:0;
+  font-size:28px;
+  line-height:1.2;
+  color:var(--main-dark);
+}
+header p{
+  margin:6px 0 0;
+  color:var(--muted);
+  font-size:14px;
+}
+main{
+  max-width:760px;
+  margin:0 auto;
+  padding:14px;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:16px;
+  margin-bottom:14px;
+}
+.card h2{
+  margin:0 0 12px;
+  font-size:18px;
+  color:var(--main-dark);
+}
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+label{
+  display:block;
+  font-size:13px;
+  margin-bottom:4px;
+  color:var(--muted);
+  font-weight:700;
+}
+input,select{
+  width:100%;
+  height:42px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:0 12px;
+  font-size:15px;
+  background:#fffdfa;
+}
+.dayCard{
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:14px;
+  margin-bottom:12px;
+  background:#fffdfa;
+}
+.dayTitle{
+  font-size:17px;
+  font-weight:800;
+  margin-bottom:6px;
+}
+.eventTag{
+  display:inline-block;
+  background:#fee2d5;
+  color:#c2410c;
+  border-radius:999px;
+  padding:4px 10px;
+  font-size:12px;
+  font-weight:700;
+  margin-bottom:10px;
+}
+.optionGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.optionBtn{
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:14px;
+  height:42px;
+  font-size:14px;
+  font-weight:700;
+  color:var(--text);
+}
+.optionBtn.active{
+  background:var(--main);
+  color:#fff;
+  border-color:var(--main);
+}
+textarea{
+  width:100%;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px;
+  min-height:80px;
+  resize:vertical;
+  font-size:15px;
+}
+.actions{
+  position:sticky;
+  bottom:0;
+  background:rgba(255,248,239,.95);
+  backdrop-filter:blur(10px);
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--line);
+}
+button.primary{
+  width:100%;
+  border:none;
+  background:var(--main);
+  color:#fff;
+  height:48px;
+  border-radius:18px;
+  font-size:16px;
+  font-weight:800;
+}
+.output{
+  white-space:pre-wrap;
+  background:#20160f;
+  color:#fff7ed;
+  border-radius:16px;
+  padding:16px;
+  font-size:14px;
+  line-height:1.6;
+}
+@media (max-width:760px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>66 Cheesecake<br>排班填寫系統</h1>
+  <p>員工可排班時段填寫｜手機版</p>
+</header>
+
+<main>
+
+<section class="card">
+  <h2>① 基本資料</h2>
+
+  <div class="grid">
+    <div>
+      <label>姓名</label>
+      <select id="staffName">
+        <option>Ling</option>
+        <option>羽芯</option>
+        <option>Alice</option>
+        <option>德容</option>
+        <option>宇麒</option>
+      </select>
+    </div>
+
+    <div>
+      <label>月份</label>
+      <input type="month" value="2026-05" />
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>② 可排班時段</h2>
+
+  <div id="daysContainer"></div>
+</section>
+
+<section class="card">
+  <h2>③ 其他備註</h2>
+  <textarea id="notes" placeholder="例如：5/15 要提早離開、5/21 可支援閉店"></textarea>
+</section>
+
+<section class="card">
+  <h2>LINE 回報預覽</h2>
+  <div class="output" id="output">按下產生回報後顯示</div>
+</section>
+
+</main>
+
+<div class="actions">
+  <button class="primary" onclick="generateReport()">產生排班回報</button>
+</div>
+
+<script>
+const days = [
+  { date:'5/1（五）' },
+  { date:'5/2（六）' },
+  { date:'5/3（日）' },
+  { date:'5/4（一）', event:'消毒＋閉店停電' },
+  { date:'5/5（二）', event:'閉店停電' },
+  { date:'5/6（三）', event:'閉店停電' },
+  { date:'5/7（四）' }
+];
+
+const options = [
+  '早班',
+  '晚班',
+  '全天',
+  '休假',
+  '17:00前',
+  '17:00後'
+];
+
+function renderDays(){
+  const container = document.getElementById('daysContainer');
+
+  container.innerHTML = days.map((day,index)=>`
+    <div class="dayCard">
+
+      <div class="dayTitle">${day.date}</div>
+
+      ${day.event ? `<div class="eventTag">${day.event}</div>` : ''}
+
+      <div class="optionGrid">
+        ${options.map(option => `
+          <button
+            type="button"
+            class="optionBtn"
+            data-day="${index}"
+            data-option="${option}"
+            onclick="toggleOption(this)">
+            ${option}
+          </button>
+        `).join('')}
+      </div>
+
+    </div>
+  `).join('');
+}
+
+function toggleOption(button){
+  const card = button.closest('.dayCard');
+
+  card.querySelectorAll('.optionBtn').forEach(btn=>{
+    btn.classList.remove('active');
+  });
+
+  button.classList.add('active');
+}
+
+function generateReport(){
+
+  const name = document.getElementById('staffName').value;
+  const notes = document.getElementById('notes').value.trim();
+
+  const lines = [];
+
+  lines.push(`${name}｜2026年5月排班`);
+  lines.push('');
+
+  document.querySelectorAll('.dayCard').forEach(card=>{
+
+    const day = card.querySelector('.dayTitle').textContent;
+
+    const active = card.querySelector('.optionBtn.active');
+
+    lines.push(`${day}：${active ? active.dataset.option : '未填寫'}`);
+
+  });
+
+  if(notes){
+    lines.push('');
+    lines.push('其他備註：');
+    lines.push(notes);
+  }
+
+  document.getElementById('output').textContent = lines.join('\n');
+}
+
+renderDays();
+</script>
+</body>
+</html>
