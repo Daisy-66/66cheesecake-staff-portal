@@ -136,7 +136,15 @@ async function loadOverview(){
     }
 
 allDays = result.days || [];
-currentIndex = 0;
+
+const today = new Date();
+const todayISO =
+  `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+const todayIndex = allDays.findIndex(day => day.date === todayISO);
+
+currentIndex = todayIndex >= 0 ? todayIndex : 0;
+
 renderSingleDay();
     
   }catch(e){
